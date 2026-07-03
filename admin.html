@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin PHBN - Kecamatan Bolano</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-zinc-100 font-sans text-zinc-800 pb-16">
+
+    <header class="bg-zinc-900 text-white shadow-md">
+        <div class="container mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="text-center sm:text-left">
+                <h1 class="text-2xl font-black tracking-wide flex items-center justify-center sm:justify-start">
+                    <span class="bg-red-600 text-white px-2 py-0.5 rounded-md mr-2 text-sm uppercase">POS</span> KENDALI ADMIN PHBN
+                </h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Sistem Manajemen Entri Data Kas Keuangan, Pendaftaran Lomba, & Galeri</p>
+            </div>
+            <a href="index.html" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg font-bold text-xs transition cursor-pointer">🖥️ Lihat Papan Informasi Publik</a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 mt-8">
+        
+        <div class="flex space-x-2 border-b border-zinc-300 mb-6 overflow-x-auto">
+            <button onclick="switchAdminTab('form-keuangan')" id="btn-form-keuangan" class="px-5 py-2.5 font-bold text-sm rounded-t-xl bg-red-600 text-white cursor-pointer transition">💰 Input Transaksi Kas</button>
+            <button onclick="switchAdminTab('form-lomba')" id="btn-form-lomba" class="px-5 py-2.5 font-bold text-sm rounded-t-xl bg-zinc-200 text-zinc-700 hover:bg-zinc-300 cursor-pointer transition">📝 Registrasi Lomba</button>
+            <button onclick="switchAdminTab('form-galeri')" id="btn-form-galeri" class="px-5 py-2.5 font-bold text-sm rounded-t-xl bg-zinc-200 text-zinc-700 hover:bg-zinc-300 cursor-pointer transition">🔗 Sematkan Galeri</button>
+        </div>
+
+        <div id="panel-form-keuangan" class="admin-panel">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-zinc-200 mb-6">
+                <h3 class="text-lg font-bold text-zinc-800 mb-4 border-b pb-2 flex items-center">
+                    <span class="w-2.5 h-5 bg-red-600 inline-block mr-2 rounded-full"></span> Form Kas Masuk & Kas Keluar Baru
+                </h3>
+                <form id="form-keuangan" onsubmit="addKeuangan(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Jenis Kas Anggaran</label>
+                            <select id="keu-jenis" onchange="updateItemOptions()" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none bg-white font-medium" required>
+                                <option value="Pendapatan">Pendapatan (Pemasukan / Sumber Dana)</option>
+                                <option value="Pengeluaran">Pengeluaran (Belanja / Alokasi Dana)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Item Kategori Kegiatan</label>
+                            <select id="keu-item" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none bg-white font-medium" required></select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Sub Rincian Anggaran (Keterangan Spesifik)</label>
+                            <input type="text" id="keu-sub" placeholder="Contoh: Bantuan Dana Pemdes Bolano Barat / Pembelian Konsumsi Paskibraka" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Nominal Anggaran (Rp - Angka Saja)</label>
+                            <input type="number" id="keu-jumlah" placeholder="Contoh: 1500000" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none font-bold" required>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" id="btn-simpan-keu" class="w-full md:w-52 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-xs cursor-pointer">💾 Simpan Data Transaksi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="panel-form-lomba" class="admin-panel hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-zinc-200 mb-6">
+                <h3 class="text-lg font-bold text-zinc-800 mb-4 border-b pb-2 flex items-center">
+                    <span class="w-2.5 h-5 bg-red-600 inline-block mr-2 rounded-full"></span> Form Pendaftaran Kontingen Lomba Baru
+                </h3>
+                <form id="form-lomba" onsubmit="addPeserta(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Cabang Perlombaan</label>
+                            <input type="text" id="lomba-jenis" placeholder="Contoh: Panjat Pinang Dewasa" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Nama Lengkap Peserta / Tim</label>
+                            <input type="text" id="lomba-nama" placeholder="Contoh: Kelompok Remaja Masjid Dusun 1" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Asal Dusun / Desa / Instansi</label>
+                            <input type="text" id="lomba-asal" placeholder="Contoh: Desa Bolano Utara" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" id="btn-simpan-lomba" class="w-full md:w-52 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-xs cursor-pointer">📝 Daftarkan Peserta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="panel-form-galeri" class="admin-panel hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-zinc-200 mb-6">
+                <h3 class="text-lg font-bold text-zinc-800 mb-4 border-b pb-2 flex items-center">
+                    <span class="w-2.5 h-5 bg-red-600 inline-block mr-2 rounded-full"></span> Penyematan Link Media & Dokumentasi
+                </h3>
+                <form id="form-galeri" onsubmit="addGaleri(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Nama Agenda Kegiatan / Upacara</label>
+                            <input type="text" id="galeri-nama" placeholder="Contoh: Karnaval Kebudayaan TK-SMA" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Link URL (Google Drive / YouTube)</label>
+                            <input type="url" id="galeri-link" placeholder="Contoh: https://drive.google.com/..." class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-zinc-600 mb-1">Keterangan Tambahan Informasi</label>
+                            <input type="text" id="galeri-ket" placeholder="Contoh: Kumpulan dokumentasi foto panitia" class="w-full border border-zinc-300 rounded-lg p-2.5 focus:ring-2 focus:ring-red-500 outline-none" required>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" id="btn-simpan-galeri" class="w-full md:w-52 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-xs cursor-pointer">🖼️ Sematkan Dokumentasi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="bg-zinc-800 text-white p-6 rounded-2xl shadow-sm border border-zinc-700 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h4 class="font-bold text-base">Pusat Backup Data Administrasi PHBN</h4>
+                <p class="text-xs text-zinc-400 mt-0.5">Lakukan pencadangan data langsung ke file Excel komputer Anda sewaktu-waktu</p>
+            </div>
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="exportExcelData('Keuangan')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition">📊 Unduh Excel Keuangan</button>
+                <button onclick="exportExcelData('Lomba')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold cursor-pointer transition">🏆 Unduh Excel Lomba</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ⚠️ SAMAKAN TAUTAN SCRIPT WEB APP /exec ANDA DI SINI!
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzab3wDzju44r1z_wgqyG3HxsNew04ygG7d4IeIlsl59O3cQRtwJoU350_lKmLZ_8S6/exec";
+
+        let cacheDataLomba = [];
+
+        const opsiPendapatan = [
+            "Sumbangan Bersama Guru / Sekolah",
+            "Sumbangan Pemerintah Desa",
+            "Sumbangan Kantor Camat / Instansi",
+            "Sumbangan Donatur (Pengusaha / Toko)",
+            "Sponsorship & Sumber Lain"
+        ];
+
+        const opsiPengeluaran = [
+            "Pelatihan Paskibraka",
+            "Kegiatan Upacara HUT RI",
+            "Kegiatan Perlombaan",
+            "Pentas Seni / Ramah Tamah",
+            "Karnaval Budaya",
+            "Operasional Panitia & Atribut"
+        ];
+
+        function switchAdminTab(targetFormId) {
+            document.querySelectorAll('.admin-panel').forEach(panel => panel.classList.add('hidden'));
+            document.getElementById(`panel-${targetFormId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('button[id^="btn-form-"]').forEach(btn => {
+                btn.classList.remove('bg-red-600', 'text-white');
+                btn.classList.add('bg-zinc-200', 'text-zinc-700');
+            });
+            document.getElementById(`btn-${targetFormId}`).classList.remove('bg-zinc-200', 'text-zinc-700');
+            document.getElementById(`btn-${targetFormId}`).classList.add('bg-red-600', 'text-white');
+        }
+
+        function updateItemOptions() {
+            const jenis = document.getElementById('keu-jenis').value;
+            const selectItem = document.getElementById('keu-item');
+            selectItem.innerHTML = '';
+            
+            const listOpsi = jenis === "Pendapatan" ? opsiPendapatan : opsiPengeluaran;
+            listOpsi.forEach(opsi => {
+                selectItem.innerHTML += `<option value="${opsi}">${opsi}</option>`;
+            });
+        }
+
+        function fetchLombaDataForCounter() {
+            if (SCRIPT_URL === "PASTE_URL_WEB_APP_ANDA_DI_SINI") return;
+            fetch(`${SCRIPT_URL}?action=read&target=Lomba`)
+                .then(res => res.json())
+                .then(res => { if(res.status === "success") cacheDataLomba = res.data; })
+                .catch(err => console.error(err));
+        }
+
+        function addKeuangan(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-simpan-keu');
+            btn.innerText = "⏳ Menyimpan Data..."; btn.disabled = true;
+
+            const jenis = document.getElementById('keu-jenis').value;
+            const item_kegiatan = document.getElementById('keu-item').value;
+            const sub_rincian = document.getElementById('keu-sub').value;
+            const jumlah = parseInt(document.getElementById('keu-jumlah').value);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'insert', target: 'Keuangan', jenis, item_kegiatan, sub_rincian, jumlah })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                document.getElementById('form-keuangan').reset();
+                updateItemOptions();
+                btn.innerText = "💾 Simpan Data Transaksi"; btn.disabled = false;
+            })
+            .catch(err => {
+                alert("Gagal koneksi atau URL Apps Script salah.");
+                btn.innerText = "💾 Simpan Data Transaksi"; btn.disabled = false;
+            });
+        }
+
+        function addPeserta(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-simpan-lomba');
+            btn.innerText = "⏳ Mendaftarkan..."; btn.disabled = true;
+
+            const jenis = document.getElementById('lomba-jenis').value;
+            const nama = document.getElementById('lomba-nama').value;
+            const asal = document.getElementById('lomba-asal').value;
+            
+            const nomorUrut = cacheDataLomba.filter(l => (l.jenis_lomba || l.jenis || '').toLowerCase().trim() === jenis.toLowerCase().trim()).length + 1;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'insert', target: 'Lomba', nomor: nomorUrut, jenis, nama, asal })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                document.getElementById('form-lomba').reset();
+                btn.innerText = "📝 Daftarkan Peserta"; btn.disabled = false;
+                fetchLombaDataForCounter();
+            })
+            .catch(err => {
+                alert("Gagal mengirim registrasi.");
+                btn.innerText = "📝 Daftarkan Peserta"; btn.disabled = false;
+            });
+        }
+
+        function addGaleri(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-simpan-galeri');
+            btn.innerText = "⏳ Menyematkan..."; btn.disabled = true;
+
+            const nama = document.getElementById('galeri-nama').value;
+            const link = document.getElementById('galeri-link').value;
+            const ket = document.getElementById('galeri-ket').value;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'insert', target: 'Galeri', nama, link, ket })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                document.getElementById('form-galeri').reset();
+                btn.innerText = "🖼️ Sematkan Dokumentasi"; btn.disabled = false;
+            })
+            .catch(err => {
+                alert("Gagal menyematkan galeri.");
+                btn.innerText = "🖼️ Sematkan Dokumentasi"; btn.disabled = false;
+            });
+        }
+
+        function exportExcelData(targetSheet) {
+            if (SCRIPT_URL === "PASTE_URL_WEB_APP_ANDA_DI_SINI") return alert("Isi SCRIPT_URL terlebih dahulu.");
+            alert("Sedang mengambil data rekap dari cloud...");
+            
+            fetch(`${SCRIPT_URL}?action=read&target=${targetSheet}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status !== "success") return alert("Gagal menarik data.");
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.json_to_sheet(res.data);
+                    XLSX.utils.book_append_sheet(wb, ws, targetSheet);
+                    XLSX.writeFile(wb, `Backup_Data_${targetSheet}_PHBN_Bolano.xlsx`);
+                });
+        }
+
+        window.onload = function() {
+            updateItemOptions();
+            fetchLombaDataForCounter();
+        };
+    </script>
+</body>
+</html>
